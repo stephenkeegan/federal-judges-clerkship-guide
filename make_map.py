@@ -614,6 +614,9 @@ def build_map():
 
     folium.LayerControl(collapsed=False).add_to(m)
     m.get_root().html.add_child(folium.Element(search_html))
+    m.get_root().html.add_child(folium.Element(provenance_html))
+    m.get_root().html.add_child(folium.Element(legend_html))
+    m.get_root().html.add_child(folium.Element(dark_mode_js))
     m.save("oscar_clerkship_map.html")
     print("Map saved to oscar_clerkship_map.html")
 
