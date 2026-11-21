@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Generated pipeline outputs (rebuilt by run_pipeline.py)
+final_*.csv
+active_*.csv
+app/judges.json
+oscar_clerkship_map.html
+enrich_cache.json
+*.pyc
+.ipynb_checkpoints/
+
+# Source data committed so the no-scrape CI deploy works.
+# (These are the Wikipedia scrape outputs + reference datasets consumed by merge.py
+#  and add_info.py. Do NOT ignore current_*.csv, pres_*.csv, cities.csv,
+#  oscar_master_listings.csv.)
+
+# Misc scraper output (optional enrichments)
+ballotpedia_data.csv
+courtlistener_data.csv
+courtlistener_judges.csv
+fjc_data.csv
+gscholar_data.csv
+justia_data.csv
+final_*_bio_hiring.csv
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

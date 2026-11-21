@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Federal Judges Clerkship Guide</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Federal Judges Clerkship Guide</h1>
+    <p>Find a federal judge's courthouse, background relevant to a prospective clerk, and whether they are hiring.</p>
+  </header>
+
+  <main id="app">
+    <section class="toolbar">
+      <input
+        id="search"
+        type="search"
+        placeholder="Search by judge name, court, or duty station (city)..."
+        autocomplete="off"
+      />
+      <div class="filters">
+        <label><input type="checkbox" id="f-hiring" /> Hiring only</label>
+        <label>
+          <select id="f-level">
+            <option value="">All levels</option>
+            <option value="district">District</option>
+            <option value="circuit">Circuit</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <p id="stats" class="stats"></p>
+
+    <div class="layout">
+      <ul id="results" class="results"></ul>
+      <aside id="detail" class="detail hidden"></aside>
+    </div>
+  </main>
+
+  <footer>
+    <p>Data: Wikipedia (current + presidential appointees) &middot; Hiring: OSCAR (oscar.uscourts.gov).</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
