@@ -1,6 +1,6 @@
-from export_site_data import _clean, _parse_year, _court_from_summary, _years_of_service
-from parse_oscar import normalize, first_last_key
+from export_site_data import _clean, _court_from_summary, _parse_year, _years_of_service
 from helper_functions import derive_party
+from parse_oscar import first_last_key, normalize
 
 
 def test_clean():

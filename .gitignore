@@ -5,21 +5,12 @@ __pycache__/
 .venv/
 venv/
 
-# Generated pipeline outputs (rebuilt by run_pipeline.py)
-final_*.csv
-active_*.csv
-app/judges.json
-oscar_clerkship_map.html
+# Caches / transient
 enrich_cache.json
 *.pyc
 .ipynb_checkpoints/
 
-# Source data committed so the no-scrape CI deploy works.
-# (These are the Wikipedia scrape outputs + reference datasets consumed by merge.py
-#  and add_info.py. Do NOT ignore current_*.csv, pres_*.csv, cities.csv,
-#  oscar_master_listings.csv.)
-
-# Misc scraper output (optional enrichments)
+# Optional scraper enrichments (regenerated on demand; large, not needed for deploy)
 ballotpedia_data.csv
 courtlistener_data.csv
 courtlistener_judges.csv
@@ -32,3 +23,8 @@ final_*_bio_hiring.csv
 .DS_Store
 .idea/
 .vscode/
+
+# NOTE: final_*.csv, active_*.csv, app/judges.json, and
+# oscar_clerkship_map.html are intentionally COMMITTED so the GitHub Pages
+# deploy works without re-running the full pipeline, and so the daily-update
+# cron produces a reviewable diff.

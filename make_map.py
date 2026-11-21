@@ -185,28 +185,39 @@ def build_map():
     print(f"OSCAR data source: {data_source}")
     print(f"Pipeline timestamp: {pipeline_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
 
-    # Apply fallback coordinates only when lat/lng missing
+    # Override city-level geocodes with courthouse-accurate coordinates so each
+    # judge's dot sits at the real courthouse instead of the city centroid.
+    from courthouse_data import lookup_courthouse
     for df in [df_district, df_circuit]:
         for idx, row in df.iterrows():
-            lat = df.at[idx, 'lat']
-            lng = df.at[idx, 'lng']
-            if pd.isna(lat) or pd.isna(lng):
+            court_abbr = row.get('Court [Note 2]') if pd.notna(row.get('Court [Note 2]')) else ''
+            ch = lookup_courthouse(row.get('Duty Station'), court_abbr if court_abbr else row.get('Circuit'))
+            if ch:
+                df.at[idx, 'lat'] = ch[0]
+                df.at[idx, 'lng'] = ch[1]
+            elif pd.isna(df.at[idx, 'lat']) or pd.isna(df.at[idx, 'lng']):
                 coord = geocode_fallback(row)
                 if coord is not None:
                     df.at[idx, 'lat'] = coord[0]
                     df.at[idx, 'lng'] = coord[1]
 
-    _used_coords = {}
+    # Judges at the same courthouse share coordinates; spread overlapping dots
+    # into a small ring around the courthouse so every judge remains clickable.
+    _coord_counts = {}
 
-    def jitter_coords(lat, lng, key):
-        if key not in _used_coords:
-            _used_coords[key] = 0
-            return (lat, lng)
-        _used_coords[key] += 1
-        offset = 0.008 * _used_coords[key]
-        angle = _used_coords[key] * 0.6
-        return (lat + offset * math.sin(angle),
-                lng + offset * math.cos(angle))
+    def jitter_coords(lat, lng):
+        if pd.isna(lat) or pd.isna(lng):
+            return lat, lng
+        key = (round(lat, 4), round(lng, 4))
+        n = _coord_counts.get(key, 0)
+        _coord_counts[key] = n + 1
+        if n == 0:
+            return lat, lng
+        # Place each additional judge on an expanding ring around the courthouse.
+        ring = (n - 1) // 8 + 1
+        angle = (n - 1) * (2 * math.pi / 8)
+        radius = 0.0009 * ring
+        return (lat + radius * math.sin(angle), lng + radius * math.cos(angle))
 
     m = folium.Map(location=[39.8283, -98.5795], zoom_start=4, tiles=None)
     folium.TileLayer(
@@ -291,61 +302,112 @@ def build_map():
             off_link = str(off)
             off_text = 'Official Source / Wikipedia'
 
-        bio_html = ''
-        if bio != 'N/A':
-            bio_clean = str(bio).replace('\n', '<br/>')
-            bio_html = f'<hr style="margin:6px 0;"><p style="margin:4px 0; font-size:12px; line-height:1.4;"><b>About:</b> {bio_clean}</p>'
+        # Courthouse name (from the accurate courthouse lookup) for the popup.
+        court_abbr = na(row.get('Court [Note 2]', ''))
+        from courthouse_data import lookup_courthouse
+        ch = lookup_courthouse(row.get('Duty Station'), court_abbr if court_abbr != 'N/A' else None)
+        courthouse_name = ch[2] if ch else na(row.get('Duty Station', 'N/A'))
+
+        # Hiring status summary line.
+        if is_hiring:
+            hiring_line = '<b style="color:#1b7f3b;">HIRING</b>'
+            if hiring_term != 'N/A':
+                hiring_line += f' &middot; {hiring_term}'
+            if posting_date != 'N/A':
+                hiring_line += f' &middot; posted {posting_date} ({days_since}d ago)'
+        else:
+            hiring_line = '<span style="color:#6b7280;">Not currently hiring</span>'
+
+        # Career status (active vs senior).
+        ended = na(row.get('Ended active service', ''))
+        if ended and ended != 'N/A' and 'incumbent' not in ended.lower():
+            status = f'<span style="color:#b25e00;">Senior / inactive ({ended})</span>'
+        else:
+            status = '<span style="color:#1b7f3b;">Active</span>'
+
+        # Years of service + appointing president party.
+        party = row.get('Party', 'Other')
+        party_color = {'Republican': '#b3261e', 'Democrat': '#1a56b8'}.get(party, '#6b7280')
+
+        wiki_summary = na(row.get('Wikipedia Summary', ''))
+        wiki_html = ''
+        if wiki_summary != 'N/A':
+            wiki_html = (
+                '<hr style="margin:8px 0;">'
+                '<p style="margin:4px 0; font-size:12px; line-height:1.5; color:#333;">'
+                f'{wiki_summary}</p>'
+            )
+
+        edu = na(row.get('Education', ''))
+        edu_html = f'<p style="margin:2px 0;"><b>Education:</b> {edu}</p>' if edu != 'N/A' else ''
+
+        # Opinion count (workload tab).
+        cl_row = cl_data.get(str(row['Judge']), {})
+        if isinstance(cl_row, dict):
+            op_count = cl_row.get('Opinion Count', 'N/A')
+            recent_ops = cl_row.get('Recent Opinions', 'N/A')
+        else:
+            op_count = 'N/A'
+            recent_ops = 'N/A'
 
         # Unique id for this marker's tab toggle so popups don't collide.
         uid = f"pp{abs(hash(row['Judge'])) % (10**8)}"
         popup = f"""
-        <div style="font-family: Arial; width: 360px; max-height: 500px; overflow-y: auto;">
-            <div style="display:flex;gap:6px;margin-bottom:6px;">
-                <button onclick="document.getElementById('{uid}h').style.display='block'; document.getElementById('{uid}w').style.display='none';" style="font-size:11px;">Hiring</button>
-                <button onclick="document.getElementById('{uid}h').style.display='none'; document.getElementById('{uid}w').style.display='block';" style="font-size:11px;">Workload</button>
+        <div style="font-family: -apple-system, Arial, sans-serif; width: 340px; max-height: 460px; overflow-y: auto; font-size: 13px;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+                <button onclick="document.getElementById('{uid}h').style.display='block';document.getElementById('{uid}w').style.display='none';" style="flex:1;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;background:#1a4d8f;color:#fff;cursor:pointer;">Overview &amp; Hiring</button>
+                <button onclick="document.getElementById('{uid}h').style.display='none';document.getElementById('{uid}w').style.display='block';" style="flex:1;font-size:11px;padding:4px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">Workload &amp; Links</button>
             </div>
             <div id="{uid}h">
-            <h4 style="margin:0 0 6px 0;">{row['Judge']}</h4>
-            <p style="margin:2px 0;"><b>Title:</b> {title}</p>
-            <p style="margin:2px 0;"><b>Court:</b> {court}</p>
-            <p style="margin:2px 0;"><b>Duty Station:</b> {na(row.get('Duty Station', 'N/A'))}</p>
-            <p style="margin:2px 0;"><b>Appointed By:</b> {na(row.get('Appointed By', 'N/A'))}</p>
-            <p style="margin:2px 0;"><b>Party:</b> {row.get('Party', 'Other')}</p>
-            <p style="margin:2px 0;"><b>Born:</b> {born}</p>
-            <p style="margin:2px 0;"><b>Nominated:</b> {nom_date}</p>
-            <p style="margin:2px 0;"><b>Confirmation Vote:</b> {conf_vote}</p>
-            <p style="margin:2px 0;"><b>Began Service:</b> {began_service}</p>
-            <p style="margin:2px 0;"><b>Years of Service (approx):</b> {yos_str}</p>
-            <p style="margin:2px 0;"><b>Active Term:</b> {na(row.get('Active Term', 'N/A'))}</p>
-            <p style="margin:2px 0;"><b>Hiring Clerks:</b> <span style="{freshness_style}">{'YES' if is_hiring else 'No'}</span></p>
-            {'<p style="margin:2px 0;"><b>Hiring Term:</b> ' + hiring_term + '</p>' if is_hiring else ''}
-            {'<p style="margin:2px 0;"><b>Posted:</b> ' + posting_date + ' (' + str(days_since) + ' days ago)</p>' if is_hiring and posting_date != 'N/A' else ''}
-            {bio_html}
-            <p style="margin:4px 0; font-size:12px;"><b>Wikipedia Summary:</b> {na(row.get('Wikipedia Summary','N/A'))}</p>
+                <h4 style="margin:0 0 4px 0; font-size:15px;">{row['Judge']}</h4>
+                <p style="margin:0 0 2px 0; color:#5c636a; font-size:12px;">
+                    {title} &middot; {court}
+                </p>
+                <p style="margin:0 0 8px 0; font-size:12px;">
+                    Status: {status}
+                </p>
 
-            <p style="margin:2px 0;"><b>Education:</b> {na(row.get('Education','N/A'))}</p>
-            <p style="margin:2px 0;"><b>Alma mater:</b> {na(row.get('Alma mater','N/A'))}</p>
+                <dl style="margin:0 0 8px 0; display:grid; grid-template-columns: 130px 1fr; gap:3px 10px; font-size:12px;">
+                    <dt style="color:#5c636a;">Courthouse</dt><dd style="margin:0;">{courthouse_name}</dd>
+                    <dt style="color:#5c636a;">Duty station</dt><dd style="margin:0;">{na(row.get('Duty Station', 'N/A'))}</dd>
+                    <dt style="color:#5c636a;">Appointed by</dt><dd style="margin:0;">{na(row.get('Appointed By', 'N/A'))}</dd>
+                    <dt style="color:#5c636a;">Party</dt><dd style="margin:0;"><span style="color:{party_color}; font-weight:600;">{party}</span></dd>
+                    <dt style="color:#5c636a;">Born</dt><dd style="margin:0;">{born}</dd>
+                    <dt style="color:#5c636a;">Years on bench</dt><dd style="margin:0;">{yos_str}</dd>
+                    <dt style="color:#5c636a;">Nominated</dt><dd style="margin:0;">{nom_date}</dd>
+                    <dt style="color:#5c636a;">Confirmed</dt><dd style="margin:0;">{conf_vote}</dd>
+                    <dt style="color:#5c636a;">Began service</dt><dd style="margin:0;">{began_service}</dd>
+                    <dt style="color:#5c636a;">Active term</dt><dd style="margin:0;">{na(row.get('Active Term', 'N/A'))}</dd>
+                    <dt style="color:#5c636a;">Chief term</dt><dd style="margin:0;">{na(row.get('Chief Term', 'N/A'))}</dd>
+                </dl>
+                {edu_html}
+                {wiki_html}
 
+                <div style="margin:8px 0 0 0; padding:8px; border:1px solid #e2e4e8; border-left:4px solid {'#1b7f3b' if is_hiring else '#6b7280'}; border-radius:6px; background:#fbfbfc;">
+                    <p style="margin:0; font-size:13px;"><b>Hiring clerks:</b> {hiring_line}</p>
+                </div>
+
+                <p style="margin:8px 0 0 0;">
+                    <a href="{oscar_search}" target="_blank" style="color:#1a4d8f; font-size:12px;">Find clerkships on OSCAR</a>
+                    &nbsp;|&nbsp;
+                    <a href="{off_link}" target="_blank" style="color:#1a4d8f; font-size:12px;">{off_text}</a>
+                </p>
             </div>
+
             <div id="{uid}w" style="display:none;">
-            <p style="margin:2px 0;"><b>Opinion Count:</b> {op_count}</p>
-            <p style="margin:2px 0;"><b>Recent Opinions:</b> {recent_ops}</p>
-            <a href="{cl_search}" target="_blank" style="font-size:13px; color:#0066cc;">CourtListener opinions</a>
-            &nbsp;|&nbsp;
-            <a href="https://scholar.google.com/scholar?q={judge_name}" target="_blank" style="font-size:13px; color:#0066cc;">Google Scholar</a>
-            &nbsp;|&nbsp;
-            <a href="https://www.justia.com/search?q={judge_name}" target="_blank" style="font-size:13px; color:#0066cc;">Justia</a>
+                <h4 style="margin:0 0 6px 0; font-size:15px;">{row['Judge']}</h4>
+                <dl style="margin:0 0 8px 0; display:grid; grid-template-columns: 130px 1fr; gap:3px 10px; font-size:12px;">
+                    <dt style="color:#5c636a;">Opinion count</dt><dd style="margin:0;">{op_count}</dd>
+                    <dt style="color:#5c636a;">Recent opinions</dt><dd style="margin:0;">{recent_ops}</dd>
+                </dl>
+                <p style="margin:4px 0; font-size:12px; line-height:1.6;">
+                    <a href="{cl_search}" target="_blank" style="color:#1a4d8f;">CourtListener opinions</a><br/>
+                    <a href="https://scholar.google.com/scholar?q={judge_name}" target="_blank" style="color:#1a4d8f;">Google Scholar</a><br/>
+                    <a href="https://www.justia.com/search?q={judge_name}" target="_blank" style="color:#1a4d8f;">Justia</a><br/>
+                    <a href="{oscar_search}" target="_blank" style="color:#1a4d8f;">OSCAR clerkships (Google)</a><br/>
+                    <a href="{off_link}" target="_blank" style="color:#1a4d8f;">{off_text}</a>
+                </p>
             </div>
-            <hr style="margin:6px 0;">
-            <a href="{oscar_search}" target="_blank" style="font-size:13px; color:#0066cc;">Find clerkships on OSCAR (Google)</a>
-            &nbsp;|&nbsp;
-            <a href="{cl_search}" target="_blank" style="font-size:13px; color:#0066cc;">CourtListener opinions</a>
-            &nbsp;|&nbsp;
-            <a href="https://scholar.google.com/scholar?q={judge_name}" target="_blank" style="font-size:13px; color:#0066cc;">Google Scholar</a>
-            &nbsp;|&nbsp;
-            <a href="https://www.justia.com/search?q={judge_name}" target="_blank" style="font-size:13px; color:#0066cc;">Justia</a>
-            &nbsp;|&nbsp;
-            <a href="{off_link}" target="_blank" style="font-size:13px; color:#0066cc;">{off_text}</a>
         </div>
         """
         return popup
@@ -366,8 +428,7 @@ def build_map():
         for idx, row in subset.iterrows():
             is_hiring = bool(row.get('Hiring', False))
             col = freshness_color(row.get('Freshness', 'N/A')) if is_hiring else color_for(row.get('Party', 'Other'))
-            coord_key = f"{row['lat']:.4f}_{row['lng']:.4f}"
-            jittered_lat, jittered_lng = jitter_coords(row['lat'], row['lng'], coord_key)
+            jittered_lat, jittered_lng = jitter_coords(row['lat'], row['lng'])
             folium.CircleMarker(
                 location=[jittered_lat, jittered_lng], radius=marker_for(is_hiring, row.get('Freshness', 'N/A'))['radius'],
                 tooltip=f"{row['Judge']} - {'Hiring' if is_hiring else 'Not hiring'}",
@@ -475,8 +536,84 @@ def build_map():
       body.dark-mode .leaflet-container { background: #1a1a1a; }
     </style>
     """
+    # Build a compact JS array of all mapped judges for the search box.
+    # Each entry: [name, court, duty_station, lat, lng, hiring].
+    import json as _json
+    search_rows = []
+    for df in (df_district, df_circuit):
+        for _, row in df.iterrows():
+            if pd.isna(row['lat']) or pd.isna(row['lng']):
+                continue
+            search_rows.append([
+                str(row['Judge']),
+                str(row.get('Court', row.get('Circuit', ''))),
+                str(row.get('Duty Station', '')),
+                float(row['lat']),
+                float(row['lng']),
+                bool(row.get('Hiring', False)),
+            ])
+    judges_js = _json.dumps(search_rows, ensure_ascii=False)
+
+    search_html = """
+    <div style="position: fixed; top: 10px; left: 50px; z-index: 1000; width: 300px;
+        font-family: -apple-system, Arial, sans-serif;">
+        <input id="judgeSearch" type="text" placeholder="Search judges by name, court, city..."
+            style="width: 100%; box-sizing: border-box; padding: 9px 12px; font-size: 13px;
+            border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.15);" />
+        <div id="searchResults" style="margin-top: 4px; max-height: 260px; overflow-y: auto;
+            background: #fff; border: 1px solid #ccc; border-radius: 8px; display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);"></div>
+    </div>
+    <script>
+    (function() {
+        var JUDGES = __JUDGES_JSON__;
+        var input = document.getElementById('judgeSearch');
+        var results = document.getElementById('searchResults');
+        input.addEventListener('input', function() {
+            var q = input.value.trim().toLowerCase();
+            if (!q) { results.style.display = 'none'; return; }
+            var hits = JUDGES.filter(function(j) {
+                return (j[0] + ' ' + j[1] + ' ' + j[2]).toLowerCase().indexOf(q) > -1;
+            }).slice(0, 30);
+            if (hits.length === 0) {
+                results.innerHTML = '<div style="padding:8px;font-size:12px;color:#888;">No matches</div>';
+            } else {
+                results.innerHTML = hits.map(function(j) {
+                    var hire = j[5] ? ' <span style="color:#1b7f3b;font-weight:bold;">●HIRING</span>' : '';
+                    return '<div class="sr" data-lat="' + j[3] + '" data-lng="' + j[4] +
+                        '" data-name="' + j[0].replace(/"/g,'&quot;') + '" ' +
+                        'style="padding:7px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid #eee;">' +
+                        '<b>' + j[0] + '</b>' + hire + '<br/>' +
+                        '<span style="color:#888;">' + j[1] + ' &middot; ' + j[2] + '</span></div>';
+                }).join('');
+                results.querySelectorAll('.sr').forEach(function(d) {
+                    d.addEventListener('click', function() {
+                        var lat = parseFloat(d.dataset.lat), lng = parseFloat(d.dataset.lng);
+                        // Discover the Leaflet map instance folium created on window.
+                        var mp = null;
+                        for (var k in window) {
+                            try {
+                                if (window[k] && typeof window[k].setView === 'function' &&
+                                    window[k].options && window[k].options.crs) { mp = window[k]; break; }
+                            } catch (e) {}
+                        }
+                        if (mp) { mp.setView([lat, lng], 12); }
+                        results.style.display = 'none';
+                        input.value = '';
+                    });
+                });
+            }
+            results.style.display = 'block';
+        });
+        document.addEventListener('click', function(e) {
+            if (e.target.id !== 'judgeSearch') results.style.display = 'none';
+        });
+    })();
+    </script>
+    """.replace("__JUDGES_JSON__", judges_js)
 
     folium.LayerControl(collapsed=False).add_to(m)
+    m.get_root().html.add_child(folium.Element(search_html))
     m.save("oscar_clerkship_map.html")
     print("Map saved to oscar_clerkship_map.html")
 

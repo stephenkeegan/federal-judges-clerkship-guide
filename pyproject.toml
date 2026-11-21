@@ -41,6 +41,9 @@ py-modules = [
     "current_circuit_judges",
     "current_district_judges",
     "pres_appoints",
+    "export_site_data",
+    "daily_update",
+    "courthouse_data",
 ]
 
 [tool.pytest.ini_options]

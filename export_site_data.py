@@ -18,6 +18,7 @@ from datetime import datetime
 
 import pandas as pd
 
+from courthouse_data import lookup_courthouse
 from helper_functions import derive_party
 from oscar_scraper import add_hiring_flags_with_freshness, load_hiring_judges
 
@@ -108,14 +109,25 @@ def build_record(row, level, now_year):
     court = _court_name(row, level)
     yos = _years_of_service(row, now_year)
 
+    # Prefer courthouse-accurate coordinates over the city-level geocode.
+    duty_station = _clean(row.get("Duty Station"))
+    courthouse = lookup_courthouse(duty_station, _clean(row.get("Court [Note 2]")) or court)
+    if courthouse:
+        lat, lng, courthouse_name = courthouse
+    else:
+        lat = float(row["lat"]) if pd.notna(row.get("lat")) else None
+        lng = float(row["lng"]) if pd.notna(row.get("lng")) else None
+        courthouse_name = None
+
     record = {
         "judge": _clean(row.get("Judge")),
         "level": level,  # "district" or "circuit"
         "title": _clean(row.get("Title")),
         "court": court,
-        "duty_station": _clean(row.get("Duty Station")),
-        "lat": float(row["lat"]) if pd.notna(row.get("lat")) else None,
-        "lng": float(row["lng"]) if pd.notna(row.get("lng")) else None,
+        "duty_station": duty_station,
+        "courthouse": courthouse_name,
+        "lat": lat,
+        "lng": lng,
         "appointed_by": _clean(row.get("Appointed By")),
         "party": derive_party(row.get("Appointed By")),
         "born": _parse_year(row.get("Born")),

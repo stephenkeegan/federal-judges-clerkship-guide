@@ -107,6 +107,7 @@ function showDetail(j) {
   const facts = [
     kv("Title", j.title),
     kv("Court", j.court),
+    kv("Courthouse", j.courthouse),
     kv("Duty station", j.duty_station),
     kv("Appointed by", j.appointed_by),
     kv("Party", j.party),
