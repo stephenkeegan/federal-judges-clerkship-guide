@@ -27,4 +27,10 @@ final_*_bio_hiring.csv
 # NOTE: final_*.csv, active_*.csv, app/judges.json, and
 # oscar_clerkship_map.html are intentionally COMMITTED so the GitHub Pages
 # deploy works without re-running the full pipeline, and so the daily-update
-# cron produces a reviewable diff.
+# cron produces a reviewable diff.district_profiles.pdf
+district_caseload.xls
+wikitext_cache.json
+enrich_cache.json
+full_extract_cache.json
+enrich.log
+*_partial.csv

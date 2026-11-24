@@ -98,6 +98,10 @@ main { max-width: 1200px; margin: 0 auto; padding: 12px 20px 40px; }
 .badge.not-hiring { background: var(--gray); }
 .badge.district { background: var(--blue); }
 .badge.circuit { background: var(--accent); }
+.badge.chief { background: #7b2d8b; }
+.badge.senior { background: #4a5568; }
+.badge.party-democrat { background: var(--blue); }
+.badge.party-republican { background: var(--red); }
 
 .detail {
   border: 1px solid var(--line);
@@ -140,6 +144,17 @@ main { max-width: 1200px; margin: 0 auto; padding: 12px 20px 40px; }
 .links a:hover { background: #f0f3f8; }
 
 .bio { font-size: 0.9rem; color: #33373c; }
+
+.section { margin: 0 0 16px; }
+.section h3 { margin: 0 0 6px; font-size: 1rem; color: var(--ink); }
+.section h4 { margin: 0 0 4px; font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; }
+.section-text { margin: 0; font-size: 0.88rem; color: #33373c; white-space: pre-wrap; line-height: 1.5; }
+.section-text.small { font-size: 0.82rem; color: var(--muted); }
+
+.caseload { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: #fbfbfc; }
+.caseload h3 { margin: 0 0 10px; }
+.caseload-kv { grid-template-columns: 160px 1fr; margin-bottom: 10px; }
+.caseload-types { margin-top: 10px; }
 
 footer { max-width: 1200px; margin: 0 auto; padding: 18px 20px; color: var(--muted); font-size: 0.8rem; }
 

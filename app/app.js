@@ -43,9 +43,17 @@ function applyFilters() {
     const hay = [
       j.judge,
       j.court,
+      j.circuit,
       j.duty_station,
       j.appointed_by,
       j.education,
+      j.alma_mater,
+      j.clerkships,
+      j.career,
+      j.notable_cases,
+      j.wikipedia_summary,
+      j.caseload ? j.caseload.top_civil_types : "",
+      j.caseload ? j.caseload.top_criminal_types : "",
     ]
       .filter(Boolean)
       .join(" ")
@@ -104,19 +112,78 @@ function showDetail(j) {
       ].join("")
     : "";
 
+  // Status badges
+  const statusBadges = [
+    j.is_chief ? '<span class="badge chief">Chief Judge</span>' : "",
+    j.is_senior ? '<span class="badge senior">Senior Status</span>' : "",
+    j.party ? `<span class="badge party-${esc(j.party.toLowerCase())}">${esc(j.party)}</span>` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const facts = [
     kv("Title", j.title),
     kv("Court", j.court),
+    kv("Circuit", j.circuit),
     kv("Courthouse", j.courthouse),
     kv("Duty station", j.duty_station),
     kv("Appointed by", j.appointed_by),
-    kv("Party", j.party),
     kv("Born", j.born),
-    kv("Years on bench", j.years_of_service),
+    kv("Age", j.age),
+    kv("Years on bench", j.years_on_bench || j.years_of_service),
     kv("Nomination", j.nomination_date),
+    kv("Confirmation", j.confirmation_date),
     kv("Confirmation vote", j.confirmation_vote),
-    kv("Education", j.education),
+    kv("Education", j.education || j.alma_mater),
+    kv("Alma mater", j.alma_mater),
   ].join("");
+
+  // Clerk-relevant background
+  const backgroundParts = [];
+  if (j.clerkships) {
+    backgroundParts.push(
+      `<div class="section"><h3>Clerkships</h3><p class="section-text">${esc(j.clerkships)}</p></div>`
+    );
+  }
+  if (j.career) {
+    backgroundParts.push(
+      `<div class="section"><h3>Pre-bench career</h3><p class="section-text">${esc(j.career)}</p></div>`
+    );
+  }
+  if (j.notable_cases) {
+    backgroundParts.push(
+      `<div class="section"><h3>Notable cases</h3><p class="section-text">${esc(j.notable_cases)}</p></div>`
+    );
+  }
+
+  // Caseload / workload
+  const caseloadParts = [];
+  if (j.caseload) {
+    const cl = j.caseload;
+    caseloadParts.push(
+      `<div class="section caseload"><h3>District workload <span class="muted">(FY2026, per judgeship)</span></h3>` +
+      `<dl class="kv caseload-kv">` +
+      kv("Civil cases / judge", cl.civil_per_judgeship) +
+      kv("Criminal cases / judge", cl.criminal_per_judgeship) +
+      kv("Weighted filings / judge", cl.weighted_filings) +
+      kv("Median civil disposition", cl.median_civil_months ? cl.median_civil_months + " months" : null) +
+      kv("Total district filings", cl.district_filings) +
+      kv("Judgeships", cl.judgeships) +
+      kv("Trials completed", cl.trials_completed) +
+      `</dl>`
+    );
+    if (cl.top_civil_types) {
+      caseloadParts.push(
+        `<div class="caseload-types"><h4>Top civil case types</h4><p class="section-text small">${esc(cl.top_civil_types)}</p></div>`
+      );
+    }
+    if (cl.top_criminal_types) {
+      caseloadParts.push(
+        `<div class="caseload-types"><h4>Top criminal offenses</h4><p class="section-text small">${esc(cl.top_criminal_types)}</p></div>`
+      );
+    }
+    caseloadParts.push(`</div>`);
+  }
 
   const links = [
     j.oscar_search_url
@@ -138,7 +205,7 @@ function showDetail(j) {
 
   el.detail.classList.remove("hidden");
   el.detail.innerHTML = `
-    <h2>${esc(j.judge)}</h2>
+    <h2>${esc(j.judge)} ${statusBadges}</h2>
     <p class="court">${esc(j.court || "")}</p>
     <div class="hiring-box ${hiringClass}">
       <h3>${hiringHeading}</h3>
@@ -146,6 +213,8 @@ function showDetail(j) {
     </div>
     <dl class="kv">${facts}</dl>
     ${bio}
+    ${backgroundParts.join("")}
+    ${caseloadParts.join("")}
     <div class="links">${links}</div>
   `;
 }
