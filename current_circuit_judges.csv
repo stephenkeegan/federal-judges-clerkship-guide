@@ -94,11 +94,11 @@ Number,Title,Judge,Duty Station,Born,Active Term,Chief Term,Senior Term,Appointe
 84,Circuit Judge,Don Willett,"Austin, TX",1966,2018–present,—,—,Trump
 85,Circuit Judge,James C. Ho,"Dallas, TX",1973,2018–present,—,—,Trump
 86,Circuit Judge,Kyle Duncan,"New Orleans, LA",1972,2018–present,—,—,Trump
-87,Circuit Judge,Kurt D. Engelhardt,"New Orleans, LA",1960,2018–present,—,—,Trump
 88,Circuit Judge,Andrew Oldham,"Austin, TX",1978,2018–present,—,—,Trump
 89,Circuit Judge,Cory T. Wilson,"Jackson, MS",1970,2020–present,—,—,Trump
 90,Circuit Judge,Dana Douglas,"New Orleans, LA",1975,2022–present,—,—,Biden
 91,Circuit Judge,Irma Carrillo Ramirez,"Dallas, TX",1964,2023–present,—,—,Biden
+92,Circuit Judge,Anna St. John,"New Orleans, LA",1979,beg. 2027,—,—,Trump
 51,Senior Judge,Carolyn Dineen King,"Houston, TX",1938,1979–2013,1999–2006,2013–present,Carter
 60,Senior Judge,Patrick Higginbotham,"Austin, TX",1938,1982–2006,—,2006–present,Reagan
 61,Senior Judge,W. Eugene Davis,"New Orleans, LA",1936,1983–2016,—,2016–present,Reagan
@@ -106,6 +106,7 @@ Number,Title,Judge,Duty Station,Born,Active Term,Chief Term,Senior Term,Appointe
 67,Senior Judge,Rhesa Barksdale,"Jackson, MS",1944,1990–2009,—,2009–present,G.H.W. Bush
 73,Senior Judge,James L. Dennis,inactive,1936,1995–2022,—,2022–present,Clinton
 74,Senior Judge,Edith Brown Clement,"New Orleans, LA",1948,2001–2018,—,2018–present,G.W. Bush
+87,Senior Judge,Kurt D. Engelhardt,"New Orleans, LA",1960,2018–2026,—,2026–present,Trump
 67,Chief Judge,Raymond Kethledge,"Ann Arbor, MI",1966,2008–present,2026–present,—,G.W. Bush
 56,Circuit Judge,Karen Nelson Moore,"Cleveland, OH",1948,1995–present,—,—,Clinton
 58,Circuit Judge,Eric L. Clay,"Detroit, MI",1948,1997–present,—,—,Clinton
@@ -168,7 +169,6 @@ Number,Title,Judge,Duty Station,Born,Active Term,Chief Term,Senior Term,Appointe
 43,Senior Judge,Roger Leland Wollman,inactive,1934,1985–2018,1999–2002,2018–present,Reagan
 47,Senior Judge,David R. Hansen,inactive,1938,1991–2003,2002–2003,2003–present,G.H.W. Bush
 48,Senior Judge,Morris S. Arnold,"Little Rock, AR",1941,1992–2006,—,2006–present,G.H.W. Bush
-53,Senior Judge,Michael Joseph Melloy,inactive,1948,2002–2013,—,2013–present,G.W. Bush
 57,Senior Judge,Duane Benton,"Kansas City, MO",1950,2004–2026,—,2026–present,G.W. Bush
 60,Senior Judge,Ralph R. Erickson,"Fargo, ND",1959,2017–2026,—,2026–present,Trump
 94,Chief Judge,Mary H. Murguia,"Phoenix, AZ",1960,2011–present,2021–present,—,Obama
@@ -224,7 +224,6 @@ Number,Title,Judge,Duty Station,Born,Active Term,Chief Term,Senior Term,Appointe
 98,Senior Judge,Andrew D. Hurwitz,"Phoenix, AZ",1947,2012–2022,—,2022–present,Obama
 38,Chief Judge,Jerome Holmes,"Oklahoma City, OK",1961,2006–present,2022–present,—,G.W. Bush
 33,Circuit Judge,Harris Hartz,"Albuquerque, NM",1947,2001–present,—,—,G.W. Bush
-36,Circuit Judge,Timothy Tymkovich,"Denver, CO",1956,2003–present,2015–2022,—,G.W. Bush
 39,Circuit Judge,Scott Matheson Jr.,"Salt Lake City, UT",1953,2010–present,—,—,Obama
 40,Circuit Judge,Robert E. Bacharach,"Oklahoma City, OK",1959,2013–present,—,—,Obama
 41,Circuit Judge,Gregory A. Phillips,"Cheyenne, WY",1960,2013–present,—,—,Obama
@@ -234,6 +233,7 @@ Number,Title,Judge,Duty Station,Born,Active Term,Chief Term,Senior Term,Appointe
 45,Circuit Judge,Joel M. Carson III,"Roswell, NM",1971,2018–present,—,—,Trump
 46,Circuit Judge,Veronica S. Rossman,"Denver, CO",1972,2021–present,—,—,Biden
 47,Circuit Judge,Richard Federico,"Topeka, KS",1977,2023–present,—,—,Biden
+48,Circuit Judge,Daniel D. Domenico,"Denver, CO",1972,2026–present,—,—,Trump
 21,Senior Judge,Stephanie Kulp Seymour,inactive,1940,1979–2005,1994–2000,2005–present,Carter
 22,Senior Judge,John Carbone Porfilio[7],inactive,1934,1985–1999,—,1999–present,Reagan
 23,Senior Judge,Stephen H. Anderson,inactive,1932,1985–2000,—,2000–present,Reagan
@@ -245,6 +245,7 @@ Number,Title,Judge,Duty Station,Born,Active Term,Chief Term,Senior Term,Appointe
 31,Senior Judge,Carlos F. Lucero,"Denver, CO",1940,1995–2021,—,2021–present,Clinton
 32,Senior Judge,Michael R. Murphy,"Salt Lake City, UT",1947,1995–2012,—,2012–present,Clinton
 34,Senior Judge,Terrence L. O'Brien,"Cheyenne, WY",1943,2002–2013,—,2013–present,G.W. Bush
+36,Senior Judge,Timothy Tymkovich,"Denver, CO",1956,2003–2026,2015–2022,2026-present,G.W. Bush
 29,Chief Judge,William H. Pryor Jr.,"Birmingham, AL",1962,2004–present[b],2020–present,—,G.W. Bush
 31,Circuit Judge,Adalberto Jordan,"Miami, FL",1961,2012–present,—,—,Obama
 32,Circuit Judge,Robin S. Rosenbaum,"Fort Lauderdale, FL",1966,2014–present,—,—,Obama

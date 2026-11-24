@@ -1,0 +1,55 @@
+{
+  "started": "2026-11-24T18:44:32.485242",
+  "steps": {
+    "scrape_circuit": {
+      "ok": true,
+      "out": "running current_circuit_judges.py\nTotal Circuit Tables Found: 13\nCurrent circuit judges data saved to current_circuit_judges.csv"
+    },
+    "scrape_district": {
+      "ok": true,
+      "out": "running current_district_judges.py\nTotal District Tables Found: 94\nCurrent district judges data saved to current_district_judges.csv"
+    },
+    "merge": {
+      "ok": true,
+      "out": "running merge.py\nMerged current judges with presidential appointees data\nData saved to active_district.csv and active_appeals.csv"
+    },
+    "geocode": {
+      "ok": true,
+      "out": "running add_info.py\nAdded lat/long info from cities.csv and saved to final_district.csv and final_appeals.csv"
+    },
+    "enrich": {
+      "ok": true,
+      "out": "  Rate limited (429), waiting 15s...\nEnriched 189/206 judges with Wikipedia data\nenriched"
+    },
+    "map": {
+      "ok": true,
+      "out": "OSCAR data source: live OSCAR + static CSV\nPipeline timestamp: 2026-11-24 21:08:58\nMap saved to oscar_clerkship_map.html"
+    },
+    "site_data": {
+      "ok": true,
+      "out": "Wrote 1219 judges to /home/runner/work/federal-judges-clerkship-guide/federal-judges-clerkship-guide/app/judges.json\nCounts: 1053 district, 166 circuit, 36 hiring\nOSCAR source: live OSCAR + static CSV"
+    }
+  },
+  "oscar": {
+    "error": null,
+    "recent_week_ids": [
+      "840",
+      "838",
+      "837",
+      "836",
+      "835",
+      "834"
+    ],
+    "new_weeks_detected": [
+      "840",
+      "838",
+      "837",
+      "836",
+      "835",
+      "834"
+    ],
+    "new_week_count": 6
+  },
+  "finished": "2026-11-24T21:09:03.994947",
+  "ok": true
+}
