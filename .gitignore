@@ -34,3 +34,4 @@ enrich_cache.json
 full_extract_cache.json
 enrich.log
 *_partial.csv
+wikitext_cache.json
