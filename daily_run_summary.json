@@ -1,5 +1,5 @@
 {
-  "started": "2026-11-25T17:52:19.361424",
+  "started": "2026-11-27T17:20:05.574512",
   "steps": {
     "scrape_circuit": {
       "ok": true,
@@ -19,11 +19,11 @@
     },
     "enrich": {
       "ok": true,
-      "out": "  Rate limited (429), waiting 15s...\nEnriched 125/206 judges with Wikipedia data\nenriched"
+      "out": "Fetching infoboxes for matched judges...\nEnriched 185/206 judges with Wikipedia data\nenriched"
     },
     "map": {
       "ok": true,
-      "out": "OSCAR data source: live OSCAR + static CSV\nPipeline timestamp: 2026-11-25 21:09:00\nMap saved to oscar_clerkship_map.html"
+      "out": "OSCAR data source: live OSCAR + static CSV\nPipeline timestamp: 2026-11-27 19:47:14\nMap saved to oscar_clerkship_map.html"
     },
     "site_data": {
       "ok": true,
@@ -43,6 +43,6 @@
     "new_weeks_detected": [],
     "new_week_count": 0
   },
-  "finished": "2026-11-25T21:09:07.785930",
+  "finished": "2026-11-27T19:47:20.883949",
   "ok": true
 }
